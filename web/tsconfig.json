@@ -1,0 +1,25 @@
+{
+    "include": ["src"],
+    "exclude": ["node_modules"],
+    "compilerOptions": {
+        "composite": true,
+        "target": "ES2022",
+        "module": "ES2022",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "allowJs": true,
+        "allowSyntheticDefaultImports": true,
+        "noFallthroughCasesInSwitch": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": false,
+        "jsx": "react",
+        "baseUrl": ".",
+        "outDir": "./dist",
+        "paths": {}
+    }
+}
