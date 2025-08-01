@@ -11,9 +11,7 @@ const SQL = "SELECT * FROM `{0}`.`{1}` WHERE `date` BETWEEN {2} AND {3};";
 
 async function queryData(sql: string, details: boolean): Promise<any> {
     const db = new Database.MysqlService({
-        host: "server.tencent.backend.aitianyu.cn",
-        user: "root",
-        password: "ysy1998ysy[]",
+        ...Config.mysql,
         database: Config.database,
     });
 

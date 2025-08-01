@@ -292,8 +292,6 @@ module.exports = defineConfig([
         "**/build",
         "**/scripts",
         "**/test",
-        "**/node",
-        "**/web",
         "csp.config.js",
         "eslint.config.ts",
     ]),

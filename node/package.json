@@ -1,5 +1,5 @@
 {
-    "name": "account-charging",
+    "name": "node",
     "version": "0.0.1",
     "description": "",
     "main": "index.js",
@@ -7,20 +7,20 @@
     "scripts": {
         "start": "node \"./build/src/index.js\"",
         "before-build": "rimraf ./build",
-        "build": "eslint \"./\" --quiet && npm run before-build && npm run compiler",
-        "compiler": "tsc -p \"./tsconfig.build.json\" && tsc-alias -p \"./tsconfig.build.json\""
+        "build": "npm run before-build && npm run compiler",
+        "compiler": "tsc -p \"./tsconfig.json\" && tsc-alias -p \"./tsconfig.json\""
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "dependencies": {
         "@aitianyu.cn/tianyu-csp": "^0.2.1",
-        "@aitianyu.cn/tianyu-csp-tools": "^0.0.1",
         "@aitianyu.cn/types": "^0.0.13",
         "@types/node": "^24.1.0",
         "bignumber": "^1.1.0",
         "eslint": "^9.32.0",
         "eslint-plugin-import": "^2.32.0",
+        "iconv-lite": "^0.6.3",
         "process": "^0.11.10",
         "ts-loader": "^9.5.2",
         "ts-node": "^10.9.2",

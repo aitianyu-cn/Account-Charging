@@ -2,7 +2,6 @@
 
 import { HTTP_STATUS_CODE, NetworkServiceResponseData, TianyuCSP } from "@aitianyu.cn/tianyu-csp";
 import { run } from "../../dao/AddClassify";
-import { Config } from "../../Config";
 
 export async function runner(): Promise<NetworkServiceResponseData> {
     let status = 200;
@@ -18,7 +17,7 @@ export async function runner(): Promise<NetworkServiceResponseData> {
             parent = Number(parentData);
         }
 
-        await run(Config.database, Config.classify_table, newClassify, parent);
+        await run(newClassify, parent);
     } catch (e) {
         status = HTTP_STATUS_CODE.BAD_REQUEST;
         body = TianyuCSP.Utils.ErrorHelper.getError(

@@ -2,20 +2,19 @@
 
 import { Database } from "@aitianyu.cn/tianyu-csp-tools";
 import { StringHelper } from "@aitianyu.cn/types";
+import { Config } from "../Config";
 
 const SQL =
     "Select Distinct `src_account` as `accounts` from `{0}`.`{1}` UNION Select Distinct `tag_account` as `accounts` from `{0}`.`{1}`;";
 
 /** 读取所有操作过的账户 */
-export async function run(database: string, table: string): Promise<string[]> {
+export async function run(): Promise<string[]> {
     const result: string[] = [];
 
-    const sql = StringHelper.format(SQL, [database, table]);
+    const sql = StringHelper.format(SQL, [Config.database, Config.accounts_table]);
     const db = new Database.MysqlService({
-        host: "server.tencent.backend.aitianyu.cn",
-        user: "root",
-        password: "ysy1998ysy[]",
-        database: database,
+        ...Config.mysql,
+        database: Config.database,
     });
 
     try {
@@ -28,7 +27,7 @@ export async function run(database: string, table: string): Promise<string[]> {
     } catch (e) {
         void TIANYU.audit.error(
             "account-charging/dao/accounts-reader",
-            `could not get accounts from given database: ${database}.${table}`,
+            `could not get accounts from given database: ${Config.database}.${Config.accounts_table}`,
             (e as any)?.message,
         );
     }

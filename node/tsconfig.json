@@ -1,5 +1,5 @@
 {
-    "include": ["src", "web", "node"],
+    "include": ["src"],
     "exclude": [],
     "compilerOptions": {
         "composite": true,

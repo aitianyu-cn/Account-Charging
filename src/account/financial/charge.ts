@@ -2,7 +2,6 @@
 
 import { HTTP_STATUS_CODE, NetworkServiceResponseData, TianyuCSP } from "@aitianyu.cn/tianyu-csp";
 import { run } from "../../dao/ChargeAccount";
-import { Config } from "../../Config";
 import { getBoolean } from "@aitianyu.cn/types";
 
 export async function runner(): Promise<NetworkServiceResponseData> {
@@ -22,7 +21,7 @@ export async function runner(): Promise<NetworkServiceResponseData> {
         const desc = TIANYU.request.body?.["desc"] || TIANYU.request.params("desc")?.[0];
         const valid = getBoolean(TIANYU.request.body?.["valid"] || TIANYU.request.params("valid")?.[0]);
 
-        await run(Config.database, Config.accounts_table, {
+        await run({
             date,
             amount,
             invoice,

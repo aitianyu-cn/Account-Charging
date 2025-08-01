@@ -2,6 +2,7 @@
 
 import { Database } from "@aitianyu.cn/tianyu-csp-tools";
 import { StringHelper } from "@aitianyu.cn/types";
+import { Config } from "../Config";
 
 export type AccountFinancialType = "EXP" | "INC" | "FIX" | "ARR" | "EAR";
 
@@ -23,10 +24,10 @@ const SQL =
     "Insert into `{0}`.`{1}` (`date`, `amount`, `invoice`, `invoice_des`, `status`, `financial_type`, `src_account`, `tag_account`, `classify`, `desc`) Values({2}, {3}, '{4}', '{5}', {6}, '{7}', '{8}', '{9}', {10}, '{11}');";
 
 /** 记录一个账目 */
-export async function run(database: string, table: string, recorder: IAccountChargeRecorder): Promise<void> {
+export async function run(recorder: IAccountChargeRecorder): Promise<void> {
     const sql = StringHelper.format(SQL, [
-        database,
-        table,
+        Config.database,
+        Config.accounts_table,
         recorder.date,
         recorder.amount,
         recorder.invoice,
@@ -40,10 +41,8 @@ export async function run(database: string, table: string, recorder: IAccountCha
     ]);
 
     const db = new Database.MysqlService({
-        host: "server.tencent.backend.aitianyu.cn",
-        user: "root",
-        password: "ysy1998ysy[]",
-        database: database,
+        ...Config.mysql,
+        database: Config.database,
     });
 
     await db.execute(sql);

@@ -1,6 +1,7 @@
 /** @format */
 
 import { Database } from "@aitianyu.cn/tianyu-csp-tools";
+import { Config } from "../Config";
 
 interface IXCallLog {
     user: string; // the user id of current session or job
@@ -18,11 +19,7 @@ export async function trace(): Promise<void> {
 }
 
 export async function log(data: IXCallLog): Promise<void> {
-    const db = new Database.RedisService({
-        host: "server.tencent.backend.aitianyu.cn",
-        password: "ysy1998ysy[]",
-        database: "1",
-    });
+    const db = new Database.RedisService(Config.redis);
 
     await db.lpush("log", JSON.stringify(data));
     await db.close();
