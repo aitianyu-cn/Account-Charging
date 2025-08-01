@@ -7,6 +7,7 @@ import { Config } from "../Config";
 export type AccountFinancialType = "EXP" | "INC" | "FIX" | "ARR" | "EAR";
 
 export interface IAccountChargeRecorder {
+    id: string;
     date: number;
     amount: string;
     invoice: string;

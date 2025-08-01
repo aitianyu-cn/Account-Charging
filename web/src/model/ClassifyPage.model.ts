@@ -1,12 +1,13 @@
 /** @format */
 
-import { IReactProperty, IReactState } from "@aitianyu.cn/tianyu-shell/react";
+import { IReactState } from "@aitianyu.cn/tianyu-shell/react";
 
-export interface IClassifyPageProperty extends IReactProperty {}
+export interface IClassifyPageProperty {}
 
 export interface IClassifyPageState extends IReactState {}
 
 export interface IClassifyItem {
     id: number;
+    classify: string;
     parent: number;
 }

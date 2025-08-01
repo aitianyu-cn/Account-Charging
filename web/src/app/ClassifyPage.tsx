@@ -1,26 +1,27 @@
 /** @format */
 
 import React from "react";
-import { TianyuElement } from "@aitianyu.cn/tianyu-shell-react";
-// import { IStore, createStore } from "@aitianyu.cn/tianyu-store";
-import { MapOfType } from "@aitianyu.cn/types";
 import { XHRLoader } from "@aitianyu.cn/client-base";
 import { IClassifyItem, IClassifyPageProperty, IClassifyPageState } from "../model/ClassifyPage.model";
+import { ClassifyItem, IClassifyItemProp } from "../modules/ClassifyItem";
 
-export class ClassifyPage extends TianyuElement<IClassifyPageProperty, IClassifyPageState> {
+export class ClassifyPage extends React.Component<IClassifyPageProperty, IClassifyPageState> {
     // private _store: IStore;
 
-    private data: MapOfType<IClassifyItem>;
+    private data: IClassifyItemProp[];
+
+    private _loaded: boolean;
 
     public constructor(props: IClassifyPageProperty) {
-        super("classify-page", props);
+        super(props);
 
-        this.data = {};
+        this._loaded = false;
+        this.data = [];
         // this._store = createStore();
     }
 
     public override render(): React.ReactNode {
-        if (this.isLoaded()) {
+        if (this._loaded) {
             return this.renderForDone();
         }
 
@@ -37,12 +38,45 @@ export class ClassifyPage extends TianyuElement<IClassifyPageProperty, IClassify
     }
 
     private renderForDone(): React.ReactNode {
-        return <div>{JSON.stringify(this.data)}</div>;
+        return (
+            <div style={{ userSelect: "none" }}>
+                {this.data.map((item) => (
+                    <ClassifyItem id={item.id} parent={item.parent} classify={item.classify} children={item.children} />
+                ))}
+            </div>
+        );
     }
 
     private async loadData(): Promise<void> {
-        const response = await XHRLoader("POST", "/account-charging/account/api/v1/classify/read-classify");
-        this.data = response.data;
-        this.setLoaded();
+        const response = await XHRLoader("POST", "/account-charging/account/api/v1/classify/read-classify?flat=true");
+
+        this.processData(response.data);
+        setTimeout(() => {
+            this._loaded = true;
+            this.forceUpdate();
+        }, 0);
+    }
+
+    private processData(src: IClassifyItem[]): void {
+        const source_list: IClassifyItemProp[] = src.map((value) => {
+            const node: IClassifyItemProp = {
+                id: value.id,
+                parent: value.parent,
+                classify: value.classify,
+                children: [],
+            };
+            if (value.parent === 0) {
+                this.data.push(node);
+            }
+
+            return node;
+        });
+
+        source_list.forEach((value) => {
+            if (value.parent !== 0) {
+                const index = source_list.findIndex((parent) => parent.id === value.parent);
+                source_list[index].children.push(value);
+            }
+        });
     }
 }

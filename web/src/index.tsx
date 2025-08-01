@@ -19,12 +19,15 @@ import(/*webpackChunkName: "resources/core" */ "./utils/Loading").then(({ loadin
         // const reactRoot = ReactDOM.createRoot(rootHtml);
         // reactRoot.render(<div>Test Run Page</div>);
         const rootHtml = document.createElement("div");
+        rootHtml.style.height = "100vh";
+        rootHtml.style.width = "100%";
         _CORE.Major.append(rootHtml);
 
-        const { ClassifyPage } = await import("./app/ClassifyPage");
+        // const { ClassifyPage } = await import("./app/ClassifyPage");
+        const { GetFinancialPage } = await import("./app/GetFinancialPage");
 
         const reactRoot = ReactDOM.createRoot(rootHtml);
         // reactRoot.render(<div>Test Run Page</div>);
-        reactRoot.render(<ClassifyPage />);
+        reactRoot.render(<GetFinancialPage />);
     });
 });

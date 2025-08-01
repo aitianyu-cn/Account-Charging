@@ -46,6 +46,7 @@ async function queryData(sql: string, details: boolean): Promise<any> {
         if (Array.isArray(query) && query.length) {
             for (const item of query) {
                 const rec: IAccountChargeRecorder = {
+                    id: item["id"],
                     date: item["date"],
                     amount: item["amount"],
                     invoice: filterString(item["invoice"]),

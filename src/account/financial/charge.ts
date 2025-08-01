@@ -22,6 +22,7 @@ export async function runner(): Promise<NetworkServiceResponseData> {
         const valid = getBoolean(TIANYU.request.body?.["valid"] || TIANYU.request.params("valid")?.[0]);
 
         await run({
+            id: "",
             date,
             amount,
             invoice,
