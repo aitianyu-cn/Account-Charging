@@ -34,6 +34,7 @@ export class FinancialSearchForm extends React.Component<IFinancialSearchFormPro
     private _unsubscribeGranularity?: Unsubscribe;
     private _unsubscribeDate?: Unsubscribe;
     private _unsubscribeDetails?: Unsubscribe;
+    private _unsubscribeEnableEnding?: Unsubscribe;
 
     public constructor(props: IFinancialSearchFormProp) {
         super(props);
@@ -48,11 +49,17 @@ export class FinancialSearchForm extends React.Component<IFinancialSearchFormPro
                 this.forceUpdate();
             },
         );
-        this._unsubscribeDate = this.props.store.subscribe(FinancialPageStoreImpl.impl.getDate(this.props.parent), () => {
+        this._unsubscribeDate = this.props.store.subscribe(FinancialPageStoreImpl.impl.getAllDate(this.props.parent), () => {
             this.forceUpdate();
         });
         this._unsubscribeDetails = this.props.store.subscribe(
             FinancialPageStoreImpl.impl.getShowDetails(this.props.parent),
+            () => {
+                this.forceUpdate();
+            },
+        );
+        this._unsubscribeEnableEnding = this.props.store.subscribe(
+            FinancialPageStoreImpl.impl.getTargetDateEnable(this.props.parent),
             () => {
                 this.forceUpdate();
             },
@@ -63,11 +70,14 @@ export class FinancialSearchForm extends React.Component<IFinancialSearchFormPro
         this._unsubscribeGranularity?.();
         this._unsubscribeDate?.();
         this._unsubscribeDetails?.();
+        this._unsubscribeEnableEnding?.();
     }
 
     public override render(): React.ReactNode {
         const granularity = this.props.store.selecte(FinancialPageStoreImpl.impl.getGranularity(this.props.parent));
         const details = this.props.store.selecte(FinancialPageStoreImpl.impl.getShowDetails(this.props.parent));
+        const endDateEnabled =
+            this.props.store.selecte(FinancialPageStoreImpl.impl.getTargetDateEnable(this.props.parent)) === true;
 
         return (
             <div style={{ display: "flex" }}>
@@ -133,8 +143,22 @@ export class FinancialSearchForm extends React.Component<IFinancialSearchFormPro
                     </div>
 
                     <section style={{ display: "flex", margin: "10px" }}>
-                        <div style={{ marginRight: "15px" }}>查询日期</div>
+                        <div style={{ marginRight: "15px" }}>开始日期</div>
                         {this.renderDatePicker(granularity instanceof Missing ? "year" : granularity)}
+                    </section>
+                    <section style={{ display: "flex", fontSize: "15px", margin: "10px" }}>
+                        <div style={{ marginRight: "15px" }}>自定义结束日期</div>
+                        <input
+                            type="checkbox"
+                            checked={endDateEnabled}
+                            onChange={() => {
+                                this.props.store.dispatch(FinancialPageStoreImpl.impl.toggleTargetEnablement(this.props.parent));
+                            }}
+                        />
+                    </section>
+                    <section style={{ display: "flex", margin: "10px" }}>
+                        <div style={{ marginRight: "15px" }}>结束日期</div>
+                        {this.renderEndDatePicker(granularity instanceof Missing ? "year" : granularity, endDateEnabled)}
                     </section>
                 </form>
             </div>
@@ -183,7 +207,7 @@ export class FinancialSearchForm extends React.Component<IFinancialSearchFormPro
                                     FinancialPageStoreImpl.impl.setDay(this.props.parent, Number(event.target.value)),
                                 );
                             }}>
-                            {this.generateDayOption(date.month.toString())}
+                            {this.generateDayOption(date.year, date.month.toString())}
                         </select>
                     </div>
                 )}
@@ -191,10 +215,67 @@ export class FinancialSearchForm extends React.Component<IFinancialSearchFormPro
         );
     }
 
-    private generateYearsOption(): React.ReactNode {
+    private renderEndDatePicker(granularity: "year" | "half-year" | "month" | "day", enabled: boolean): React.ReactNode {
+        const date = this.props.store.selecteWithThrow(FinancialPageStoreImpl.impl.getTargetDate(this.props.parent));
+        const startDate = this.props.store.selecteWithThrow(FinancialPageStoreImpl.impl.getDate(this.props.parent));
+        return (
+            <div style={{ display: "flex" }}>
+                <div>
+                    <select
+                        disabled={!enabled}
+                        style={{ width: "100px", height: "30px", fontSize: "15px", marginRight: "10px" }}
+                        value={date.year}
+                        onChange={(event) => {
+                            this.props.store.dispatch(
+                                FinancialPageStoreImpl.impl.setTargetYear(this.props.parent, Number(event.target.value)),
+                            );
+                        }}>
+                        {this.generateYearsOption(startDate.year)}
+                    </select>
+                </div>
+                {granularity !== "year" && (
+                    <div>
+                        <select
+                            disabled={!enabled}
+                            style={{ width: "100px", height: "30px", fontSize: "15px", marginRight: "10px" }}
+                            value={date.month}
+                            onChange={(event) => {
+                                this.props.store.dispatch(
+                                    FinancialPageStoreImpl.impl.setTargetMonth(this.props.parent, Number(event.target.value)),
+                                );
+                            }}>
+                            {this.generateMonth(granularity, startDate.year === date.year ? startDate.month : 1)}
+                        </select>
+                    </div>
+                )}
+
+                {granularity === "day" && (
+                    <div>
+                        <select
+                            disabled={!enabled}
+                            style={{ width: "100px", height: "30px", fontSize: "15px" }}
+                            value={date.day}
+                            onChange={(event) => {
+                                this.props.store.dispatch(
+                                    FinancialPageStoreImpl.impl.setTargetDay(this.props.parent, Number(event.target.value)),
+                                );
+                            }}>
+                            {this.generateDayOption(
+                                date.year,
+                                date.month.toString(),
+                                startDate.year === date.year && startDate.month === date.month ? startDate.day : 1,
+                            )}
+                        </select>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    private generateYearsOption(sYear = 2025): React.ReactNode {
         const nodes: React.ReactNode[] = [];
         const endYear = new Date().getFullYear();
-        let startYear = 2025;
+        let startYear = sYear;
         do {
             nodes.push(
                 <option style={{ fontSize: "15px" }} value={startYear.toString()}>
@@ -206,7 +287,7 @@ export class FinancialSearchForm extends React.Component<IFinancialSearchFormPro
         return nodes;
     }
 
-    private generateMonth(granularity: "year" | "half-year" | "month" | "day"): React.ReactNode {
+    private generateMonth(granularity: "year" | "half-year" | "month" | "day", startMonth = 1): React.ReactNode {
         const nodes: React.ReactNode[] = [];
         if (granularity === "half-year") {
             nodes.push(
@@ -222,7 +303,7 @@ export class FinancialSearchForm extends React.Component<IFinancialSearchFormPro
         } else {
             for (let i = 1; i <= 12; ++i) {
                 nodes.push(
-                    <option style={{ fontSize: "15px" }} value={i.toString()}>
+                    <option disabled={i < startMonth} style={{ fontSize: "15px" }} value={i.toString()}>
                         {i}
                     </option>,
                 );
@@ -231,11 +312,12 @@ export class FinancialSearchForm extends React.Component<IFinancialSearchFormPro
         return nodes;
     }
 
-    private generateDayOption(month: string): React.ReactNode {
+    private generateDayOption(year: number, month: string, startDay = 1): React.ReactNode {
         const nodes: React.ReactNode[] = [];
-        for (let i = 1; i <= MonthDayMap[month] || 0; ++i) {
+        const days = (MonthDayMap[month] ?? 0) + (isLeapYear(year) ? 1 : 0);
+        for (let i = 1; i <= days; ++i) {
             nodes.push(
-                <option style={{ fontSize: "15px" }} value={i.toString()}>
+                <option disabled={i < startDay} style={{ fontSize: "15px" }} value={i.toString()}>
                     {i}
                 </option>,
             );

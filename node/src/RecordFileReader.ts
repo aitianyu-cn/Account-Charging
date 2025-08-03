@@ -7,13 +7,13 @@ import { MapOfType } from "@aitianyu.cn/types";
 
 const iconv = require("iconv-lite");
 
-export async function reader(file: string): Promise<IFileRecordLine[]> {
-    const fileReaderString = iconv.decode(fs.readFileSync(file), "gb2312");
+export async function reader(file: string, utf8: boolean = true): Promise<IFileRecordLine[]> {
+    const src = fs.readFileSync(file);
+    const fileReaderString = utf8 ? src.toString("utf-8") : iconv.decode(fs.readFileSync(file), "gb2312");
 
     const classifies = await getClassify();
 
     const lines: IFileRecordLine[] = [];
-    let lineCount = 0;
     for (const line of fileReaderString.split("\n")) {
         const rec = lineProcessing(line, classifies);
         !Number.isNaN(rec.date) && lines.push(rec);

@@ -144,9 +144,17 @@ async function queryData(sql: string, details: boolean): Promise<any> {
     };
 }
 
-export async function queryForDay(year: number, month: number, day: number, details?: boolean): Promise<any> {
+export async function queryForDay(
+    year: number,
+    month: number,
+    day: number,
+    endyear: number,
+    endmonth: number,
+    endday: number,
+    details?: boolean,
+): Promise<any> {
     const start_time = new Date(`${year}-${month}-${day} 00:00:00`).getTime();
-    const end_time = new Date(`${year}-${month}-${day} 23:59:59.999`).getTime();
+    const end_time = new Date(`${endyear}-${endmonth}-${endday} 23:59:59.999`).getTime();
 
     const sql = StringHelper.format(SQL, [Config.database, Config.accounts_table, start_time, end_time]);
     return queryData(sql, !!details);
@@ -161,11 +169,9 @@ function filterString(str: string): string {
     }
 }
 
-export async function queryForMonth(year: number, month: number): Promise<any> {
+export async function queryForMonth(year: number, month: number, endYear: number, endMonth: number): Promise<any> {
     const start_time = new Date(`${year}-${month}-01 00:00:00`).getTime();
-
-    const bEndMonth = month === 12;
-    const end_time = new Date(`${bEndMonth ? year + 1 : year}-${bEndMonth ? 1 : month + 1}-01 00:00:00`).getTime();
+    const end_time = new Date(`${endYear}-${endMonth}-01 00:00:00`).getTime();
 
     const sql = StringHelper.format(SQL, [Config.database, Config.accounts_table, start_time, end_time]);
     return queryData(sql, false);
@@ -181,9 +187,9 @@ export async function queryForHalfYear(year: number, half: number): Promise<any>
     return queryData(sql, false);
 }
 
-export async function queryForYear(year: number): Promise<any> {
+export async function queryForYear(year: number, endYear: number): Promise<any> {
     const start_time = new Date(`${year}-01-01 00:00:00`).getTime();
-    const end_time = new Date(`${year + 1}-01-01 00:00:00`).getTime();
+    const end_time = new Date(`${endYear}-01-01 00:00:00`).getTime();
 
     const sql = StringHelper.format(SQL, [Config.database, Config.accounts_table, start_time, end_time]);
     return queryData(sql, false);

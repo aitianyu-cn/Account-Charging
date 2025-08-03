@@ -15,9 +15,9 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@aitianyu.cn/tianyu-shell": "^0.1.7",
+        "@aitianyu.cn/tianyu-shell": "^0.1.9",
         "@aitianyu.cn/tianyu-shell-react": "^0.0.2",
-        "@aitianyu.cn/tianyu-store": "^0.2.7",
+        "@aitianyu.cn/tianyu-store": "^1.0.0-beta.1",
         "@aitianyu.cn/types": "^0.0.13",
         "babel-loader": "^8.3.0",
         "core-js": "^3.23.3",

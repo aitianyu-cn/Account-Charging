@@ -443,9 +443,16 @@ export class FinancialShowFrom extends React.Component<IFinancialShowFromProp> {
             await XHRLoader("POST", "/account-charging/account/api/v1/financial/get", {
                 granularity: this.props.store.selecteWithThrow(FinancialPageStoreImpl.impl.getGranularity(this.props.parent)),
                 details: this.props.store.selecteWithThrow(FinancialPageStoreImpl.impl.getShowDetails(this.props.parent)),
+                target: this.props.store.selecteWithThrow(FinancialPageStoreImpl.impl.getTargetDate(this.props.parent)),
                 ...this.props.store.selecteWithThrow(FinancialPageStoreImpl.impl.getDate(this.props.parent)),
             }).catch((err) => {
-                Message.post(TianyuShellUIMessageType.ERROR, "", `${err}`, "从/account/api/v1/financial/get获取数据失败", []);
+                Message.post(
+                    TianyuShellUIMessageType.ERROR,
+                    "",
+                    `${err?.message}`,
+                    "从/account/api/v1/financial/get获取数据失败",
+                    [],
+                );
                 return { valid: false, data: undefined };
             }),
             await XHRLoader("POST", "/account-charging/account/api/v1/classify/read-classify?flat=true", {
@@ -456,7 +463,7 @@ export class FinancialShowFrom extends React.Component<IFinancialShowFromProp> {
                 Message.post(
                     TianyuShellUIMessageType.ERROR,
                     "",
-                    `${err}`,
+                    `${err?.message}`,
                     "从/account/api/v1/classify/read-classify获取数据失败",
                     [],
                 );
@@ -467,6 +474,9 @@ export class FinancialShowFrom extends React.Component<IFinancialShowFromProp> {
         this._data = financialResponse.valid ? financialResponse.data : undefined;
         this._classify = classifyResponse.valid ? classifyResponse.data : undefined;
         this._fetching = false;
+        if (this._data && this._classify) {
+            Message.post(TianyuShellUIMessageType.SUCCESS, "", `加载数据完成！`, "", []);
+        }
         this.forceUpdate();
     }
 }

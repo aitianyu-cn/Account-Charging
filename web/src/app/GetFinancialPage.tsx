@@ -66,7 +66,7 @@ export class GetFinancialPage extends React.Component {
                 </div>
                 <div
                     style={{
-                        height: "calc(100vh - 100px)",
+                        height: "calc(100vh - 200px)",
                         width: "85%",
                         overflowY: "auto",
                         paddingTop: "10px",

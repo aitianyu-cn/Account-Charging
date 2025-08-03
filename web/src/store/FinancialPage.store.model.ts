@@ -8,6 +8,13 @@ export interface IFinancialPageStoreModel extends IterableType {
     month: number;
     day: number;
 
+    target: {
+        enable: boolean;
+        year: number;
+        month: number;
+        day: number;
+    };
+
     details: boolean;
 
     refreshKey: string;
