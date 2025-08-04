@@ -9,6 +9,7 @@ module.exports = {
         environment: "development",
         src: "build/src",
         language: "zh_CN",
+        audit: {},
     },
     rest: {
         file: ".config/rest.js",

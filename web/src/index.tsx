@@ -23,7 +23,7 @@ import(/*webpackChunkName: "resources/core" */ "./utils/Loading").then(({ loadin
         rootHtml.style.width = "100%";
         _CORE.Major.append(rootHtml);
 
-        // const { ClassifyPage } = await import("./app/ClassifyPage");
+        const { ClassifyPage } = await import("./app/ClassifyPage");
         const { GetFinancialPage } = await import("./app/GetFinancialPage");
 
         const reactRoot = ReactDOM.createRoot(rootHtml);
