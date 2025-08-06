@@ -16,7 +16,9 @@ try {
                 console.error(error);
             });
             // eslint-disable-next-line no-console
-            console.log(client.response || "success");
+            console.log(
+                client.response || `success: ${new Date(rec.date)} - ${rec.financial_type} - ${rec.amount} - ${rec.desc}`,
+            );
         }
     });
 } catch (e) {

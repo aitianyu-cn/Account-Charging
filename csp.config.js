@@ -20,7 +20,7 @@ module.exports = {
             },
             session: "SESSION_ID",
         },
-        loader: "web",
+        loader: "web/build",
     },
     xcall: {
         logger: { log: { package: "xcall", module: "runtime", method: "log" } },

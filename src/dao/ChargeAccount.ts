@@ -26,25 +26,34 @@ const SQL =
 
 /** 记录一个账目 */
 export async function run(recorder: IAccountChargeRecorder): Promise<void> {
-    const sql = StringHelper.format(SQL, [
-        Config.database,
-        Config.accounts_table,
-        recorder.date,
-        recorder.amount,
-        recorder.invoice,
-        recorder.invoiceDes,
-        recorder.status ? 1 : 0,
-        recorder.financialType,
-        recorder.accountSRC,
-        recorder.accountTAG,
-        recorder.classify,
-        recorder.desc,
-    ]);
+    return runBatch([recorder]);
+}
+
+/** 记录多个账目 */
+export async function runBatch(recorders: IAccountChargeRecorder[]): Promise<void> {
+    const sqls: string[] = [];
+    for (const recorder of recorders) {
+        const sql = StringHelper.format(SQL, [
+            Config.database,
+            Config.accounts_table,
+            recorder.date,
+            recorder.amount,
+            recorder.invoice,
+            recorder.invoiceDes,
+            recorder.status ? 1 : 0,
+            recorder.financialType,
+            recorder.accountSRC,
+            recorder.accountTAG,
+            recorder.classify,
+            recorder.desc,
+        ]);
+        sqls.push(sql);
+    }
 
     const db = new Database.MysqlService({
         ...Config.mysql,
         database: Config.database,
     });
 
-    await db.execute(sql);
+    await db.executeBatch(sqls);
 }

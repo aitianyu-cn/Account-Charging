@@ -6,10 +6,9 @@
     "scripts": {
         "start": "webpack server",
         "start-pro": "webpack server --config \"./webpack.build.config.js\"",
-        "build": "npm run collect-files && webpack --config \"./webpack.build.config.js\"",
-        "build-dev": "npm run collect-files && webpack",
-        "collect-files": "node ./webpack/runner/index.js",
-        "clean-file": "",
+        "build": "webpack --config \"./webpack.build.config.js\" && npm run clean-file",
+        "build-dev": "webpack",
+        "clean-file": "rimraf ./dist",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "",

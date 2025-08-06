@@ -17,8 +17,7 @@ const baseDir = path.resolve(__dirname);
 
 module.exports = {
     entry: {
-        index: path.resolve(baseDir, "tianyu/index.tsx"),
-        developing: path.resolve(baseDir, "tianyu/index-new.tsx"),
+        index: path.resolve(baseDir, "src/index.tsx"),
     },
     output: {
         path: path.join(__dirname, "/build"),
@@ -35,17 +34,10 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             title: "resources.aitianyu.cn",
-            template: path.resolve(baseDir, "tianyu/index.html"),
+            template: path.resolve(baseDir, "src/index.html"),
             filename: "index.html",
             chunks: ["index"],
-            favicon: path.resolve(baseDir, "tianyu/index_favicon.ico"),
-        }),
-        new HtmlWebpackPlugin({
-            title: "resources.aitianyu.cn - dev",
-            template: path.resolve(baseDir, "tianyu/index.html"),
-            filename: "dev/index.html",
-            chunks: ["developing"],
-            favicon: path.resolve(baseDir, "tianyu/index_favicon.ico"),
+            favicon: path.resolve(baseDir, "src/index_favicon.ico"),
         }),
         new CopyWebpackPlugin({
             patterns: [
@@ -64,8 +56,8 @@ module.exports = {
             ],
         }),
         new MiniCssExtractPlugin({
-            filename: "package/[name].chunks.css",
-            chunkFilename: "package/[name].chunks.css",
+            filename: "package/[name].chunks.[contenthash:3].css",
+            chunkFilename: "package/[name].chunks.[contenthash:3].css",
         }),
     ],
     resolve: handleResolve(baseDir),

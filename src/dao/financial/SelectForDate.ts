@@ -23,11 +23,17 @@ async function queryData(sql: string, details: boolean): Promise<any> {
     let totalMount_EXP = new BigNumber(0);
     let totalMount_INC = new BigNumber(0);
 
+    let totalUnmount_EXP = new BigNumber(0);
+    let totalUnmount_INC = new BigNumber(0);
+
     const accounts_map: MapOfType<{
         deal: number;
         exp: any;
         inc: any;
         total: any;
+        unmount_exp: any;
+        unmount_inc: any;
+        unmount_total: any;
     }> = {};
 
     const fnCreateAccountsMapItem = (acc: string) => {
@@ -37,6 +43,9 @@ async function queryData(sql: string, details: boolean): Promise<any> {
                 exp: new BigNumber(0),
                 inc: new BigNumber(0),
                 total: new BigNumber(0),
+                unmount_exp: new BigNumber(0),
+                unmount_inc: new BigNumber(0),
+                unmount_total: new BigNumber(0),
             };
         }
     };
@@ -62,7 +71,7 @@ async function queryData(sql: string, details: boolean): Promise<any> {
 
                 // calculations
                 totalCount += 1;
-                if (rec.status && rec.valid) {
+                if (rec.valid) {
                     recordCount += 1;
 
                     fnCreateAccountsMapItem(rec.accountSRC);
@@ -72,18 +81,34 @@ async function queryData(sql: string, details: boolean): Promise<any> {
 
                     switch (rec.financialType.toLocaleUpperCase() as AccountFinancialType) {
                         case "EXP":
-                            totalMount_EXP = totalMount_EXP.plus(amount);
-
                             accounts_map[rec.accountSRC].deal += 1;
-                            accounts_map[rec.accountSRC].exp = accounts_map[rec.accountSRC].exp.plus(amount);
-                            accounts_map[rec.accountSRC].total = accounts_map[rec.accountSRC].total.minus(amount);
+                            if (rec.status) {
+                                totalMount_EXP = totalMount_EXP.plus(amount);
+
+                                accounts_map[rec.accountSRC].exp = accounts_map[rec.accountSRC].exp.plus(amount);
+                                accounts_map[rec.accountSRC].total = accounts_map[rec.accountSRC].total.minus(amount);
+                            } else {
+                                totalUnmount_EXP = totalUnmount_EXP.plus(amount);
+
+                                accounts_map[rec.accountSRC].unmount_exp = accounts_map[rec.accountSRC].unmount_exp.plus(amount);
+                                accounts_map[rec.accountSRC].unmount_total =
+                                    accounts_map[rec.accountSRC].unmount_total.minus(amount);
+                            }
                             break;
                         case "INC":
-                            totalMount_INC = totalMount_INC.plus(amount);
-
                             accounts_map[rec.accountSRC].deal += 1;
-                            accounts_map[rec.accountSRC].inc = accounts_map[rec.accountSRC].inc.plus(amount);
-                            accounts_map[rec.accountSRC].total = accounts_map[rec.accountSRC].total.plus(amount);
+                            if (rec.status) {
+                                totalMount_INC = totalMount_INC.plus(amount);
+
+                                accounts_map[rec.accountSRC].inc = accounts_map[rec.accountSRC].inc.plus(amount);
+                                accounts_map[rec.accountSRC].total = accounts_map[rec.accountSRC].total.plus(amount);
+                            } else {
+                                totalUnmount_INC = totalUnmount_INC.plus(amount);
+
+                                accounts_map[rec.accountSRC].unmount_inc = accounts_map[rec.accountSRC].unmount_inc.plus(amount);
+                                accounts_map[rec.accountSRC].unmount_total =
+                                    accounts_map[rec.accountSRC].unmount_total.plus(amount);
+                            }
                             break;
                         case "FIX":
                         case "ARR":
@@ -122,13 +147,22 @@ async function queryData(sql: string, details: boolean): Promise<any> {
         );
     }
 
+    const amount = totalMount_INC.minus(totalMount_EXP);
+    const unmount = totalUnmount_INC.minus(totalUnmount_EXP);
+
     return {
+        amount: amount.toString(),
+        unmount: unmount.toString(),
         count: totalCount,
-        amount: totalMount_INC.minus(totalMount_EXP).toString(),
+        total: amount.plus(unmount).toString(),
         record: recordCount,
         financial: {
             EXP: totalMount_EXP.toString(),
             INC: totalMount_INC.toString(),
+            unmount: {
+                EXP: totalUnmount_EXP.toString(),
+                INC: totalUnmount_INC.toString(),
+            },
         },
         accounts_map: Object.keys(accounts_map).map((acc) => {
             const detail = accounts_map[acc];
@@ -137,7 +171,13 @@ async function queryData(sql: string, details: boolean): Promise<any> {
                 deal: detail.deal,
                 EXP: detail.exp.toString(),
                 INC: detail.inc.toString(),
-                total: detail.total.toString(),
+                total: detail.total.plus(detail.unmount_total).toString(),
+                unmount: {
+                    EXP: detail.unmount_exp.toString(),
+                    INC: detail.unmount_inc.toString(),
+                    total: detail.unmount_total.toString(),
+                },
+                amount: detail.total.toString(),
             };
         }),
         details: result,
