@@ -4,7 +4,7 @@ import { Database } from "@aitianyu.cn/tianyu-csp-tools";
 import { StringHelper } from "@aitianyu.cn/types";
 import { Config } from "../Config";
 
-export type AccountFinancialType = "EXP" | "INC" | "FIX" | "ARR" | "EAR";
+export type AccountFinancialType = "EXP" | "INC" | "FIX" | "ARR" | "EAR" | "UIN";
 
 export interface IAccountChargeRecorder {
     id: string;

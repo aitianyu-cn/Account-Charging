@@ -1,7 +1,7 @@
 /** @format */
 
 import { Database } from "@aitianyu.cn/tianyu-csp-tools";
-import { MapOfType, StringHelper } from "@aitianyu.cn/types";
+import { getBoolean, MapOfType, StringHelper } from "@aitianyu.cn/types";
 import { AccountFinancialType, IAccountChargeRecorder } from "../ChargeAccount";
 import { Config } from "../../Config";
 
@@ -9,7 +9,7 @@ const BigNumber = require("bignumber.js");
 
 const SQL = "SELECT * FROM `{0}`.`{1}` WHERE `date` BETWEEN {2} AND {3};";
 
-async function queryData(sql: string, details: boolean): Promise<any> {
+async function queryData(sql: string, details: boolean, displayAll: boolean = false): Promise<any> {
     const db = new Database.MysqlService({
         ...Config.mysql,
         database: Config.database,
@@ -25,6 +25,19 @@ async function queryData(sql: string, details: boolean): Promise<any> {
 
     let totalUnmount_EXP = new BigNumber(0);
     let totalUnmount_INC = new BigNumber(0);
+
+    let totalExpCount = 0;
+    let totalIncCount = 0;
+
+    const classify_deal_map: Record<
+        number,
+        {
+            exp: number;
+            inc: number;
+        }
+    > = {};
+    const classify_inc_map: Record<number, any> = {};
+    const classify_exp_map: Record<number, any> = {};
 
     const accounts_map: MapOfType<{
         deal: number;
@@ -50,10 +63,31 @@ async function queryData(sql: string, details: boolean): Promise<any> {
         }
     };
 
+    const fnCreateClassifyMapItem = (classify: number) => {
+        if (classify) {
+            if (!classify_deal_map[classify]) {
+                classify_deal_map[classify] = { exp: 0, inc: 0 };
+            }
+
+            if (!classify_inc_map[classify]) {
+                classify_inc_map[classify] = new BigNumber(0);
+            }
+
+            if (!classify_exp_map[classify]) {
+                classify_exp_map[classify] = new BigNumber(0);
+            }
+        }
+    };
+
     try {
         const query = await db.query(sql);
         if (Array.isArray(query) && query.length) {
             for (const item of query) {
+                const display = displayAll || getBoolean(item["display"]);
+                if (!display) {
+                    continue;
+                }
+
                 const rec: IAccountChargeRecorder = {
                     id: item["id"],
                     date: item["date"],
@@ -87,6 +121,14 @@ async function queryData(sql: string, details: boolean): Promise<any> {
 
                                 accounts_map[rec.accountSRC].exp = accounts_map[rec.accountSRC].exp.plus(amount);
                                 accounts_map[rec.accountSRC].total = accounts_map[rec.accountSRC].total.minus(amount);
+
+                                if (rec.classify) {
+                                    fnCreateClassifyMapItem(rec.classify);
+
+                                    totalExpCount += 1;
+                                    classify_deal_map[rec.classify].exp += 1;
+                                    classify_exp_map[rec.classify] = classify_exp_map[rec.classify].plus(amount);
+                                }
                             } else {
                                 totalUnmount_EXP = totalUnmount_EXP.plus(amount);
 
@@ -102,6 +144,14 @@ async function queryData(sql: string, details: boolean): Promise<any> {
 
                                 accounts_map[rec.accountSRC].inc = accounts_map[rec.accountSRC].inc.plus(amount);
                                 accounts_map[rec.accountSRC].total = accounts_map[rec.accountSRC].total.plus(amount);
+
+                                if (rec.classify) {
+                                    fnCreateClassifyMapItem(rec.classify);
+
+                                    totalIncCount += 1;
+                                    classify_deal_map[rec.classify].inc += 1;
+                                    classify_inc_map[rec.classify] = classify_inc_map[rec.classify].plus(amount);
+                                }
                             } else {
                                 totalUnmount_INC = totalUnmount_INC.plus(amount);
 
@@ -126,8 +176,29 @@ async function queryData(sql: string, details: boolean): Promise<any> {
                             totalMount_INC = totalMount_INC.plus(amount);
 
                             accounts_map[rec.accountSRC].deal += 1;
-                            accounts_map[rec.accountSRC].inc = accounts_map[rec.accountSRC].exp.plus(amount);
+                            accounts_map[rec.accountSRC].inc = accounts_map[rec.accountSRC].inc.plus(amount);
                             accounts_map[rec.accountSRC].total = accounts_map[rec.accountSRC].total.plus(amount);
+
+                            if (rec.classify) {
+                                fnCreateClassifyMapItem(rec.classify);
+
+                                totalIncCount += 1;
+                                classify_deal_map[rec.classify].inc += 1;
+                                classify_inc_map[rec.classify] = classify_inc_map[rec.classify].plus(amount);
+                            }
+                            break;
+                        case "UIN":
+                            totalMount_INC = totalMount_INC.plus(amount);
+
+                            accounts_map[rec.accountSRC].deal += 1;
+                            accounts_map[rec.accountSRC].inc = accounts_map[rec.accountSRC].inc.plus(amount);
+                            accounts_map[rec.accountSRC].total = accounts_map[rec.accountSRC].total.plus(amount);
+
+                            if (rec.classify) {
+                                fnCreateClassifyMapItem(rec.classify);
+
+                                classify_exp_map[rec.classify] = classify_exp_map[rec.classify].minus(amount);
+                            }
                             break;
                         default:
                             break;
@@ -181,6 +252,20 @@ async function queryData(sql: string, details: boolean): Promise<any> {
             };
         }),
         details: result,
+        graphic: {
+            count: {
+                exp: totalExpCount,
+                inc: totalIncCount,
+            },
+            classify: {
+                exp: Object.keys(classify_exp_map).map((id: any) => {
+                    return { classify: id, value: classify_exp_map[id].toString(), count: classify_deal_map[id]?.exp || 0 };
+                }),
+                inc: Object.keys(classify_inc_map).map((id: any) => {
+                    return { classify: id, value: classify_inc_map[id].toString(), count: classify_deal_map[id]?.inc || 0 };
+                }),
+            },
+        },
     };
 }
 

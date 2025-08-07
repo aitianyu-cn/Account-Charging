@@ -64,7 +64,7 @@ module.exports = {
     mode: "development",
     devtool: "source-map",
     devServer: {
-        port: 8000,
+        port: 4000,
         host: "0.0.0.0",
         allowedHosts: "all",
         static: static,
